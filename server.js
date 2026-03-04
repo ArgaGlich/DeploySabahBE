@@ -40,13 +40,17 @@ if (process.env.NODE_ENV !== 'production') {
 // ==========================================
 // 1. DATABASE CONNECTION (PostgreSQL)
 // ==========================================
-const db = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'sipena_sabah',
-    password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT) || 5432,
-});
+const dbConfig = process.env.DATABASE_URL
+    ? { connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false }
+    : {
+        user: process.env.DB_USER || 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        database: process.env.DB_NAME || 'sipena_sabah',
+        password: process.env.DB_PASSWORD,
+        port: parseInt(process.env.DB_PORT) || 5432,
+    };
+
+const db = new Pool(dbConfig);
 
 db.on('connect', () => logger.info('✅ Connected to PostgreSQL database'));
 db.on('error', (err) => logger.error('❌ PostgreSQL Pool Error', { error: err.message }));
