@@ -52,6 +52,28 @@ const dbConfig = process.env.DATABASE_URL
 
 const db = new Pool(dbConfig);
 
+// Automatically run SQL migration if tables don't exist
+async function initializeDatabase() {
+    try {
+        const sqlPath = path.join(__dirname, 'system_settings.sql');
+        const sql = fs.readFileSync(sqlPath, 'utf8');
+        await db.query(sql);
+        logger.info('✅ Database tables & initial data verified/created automatically.');
+
+        // Initialize admin user if none exists
+        const bcrypt = require('bcrypt');
+        const hash = await bcrypt.hash('Admin123', 10);
+        await db.query(`
+            INSERT INTO users (username, password_hash, role) 
+            VALUES ($1, $2, $3) 
+            ON CONFLICT (username) DO NOTHING
+        `, ['admin', hash, 'Admin']);
+    } catch (err) {
+        logger.error('❌ Failed to initialize database tables:', { error: err.message });
+    }
+}
+initializeDatabase();
+
 db.on('connect', () => logger.info('✅ Connected to PostgreSQL database'));
 db.on('error', (err) => logger.error('❌ PostgreSQL Pool Error', { error: err.message }));
 
