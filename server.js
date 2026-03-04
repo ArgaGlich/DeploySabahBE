@@ -91,10 +91,23 @@ app.get('/', (req, res) => {
 // ==========================================
 // 3. GOOGLE SHEETS API INTEGRATION
 // ==========================================
-const auth = new google.auth.GoogleAuth({
-    keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+let authConfig = {
     scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
+};
+
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS.startsWith('{')) {
+        // Parse from raw JSON string in environment variable
+        authConfig.credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+    } else {
+        // Load from file path
+        authConfig.keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    }
+} else {
+    logger.warn('⚠️ GOOGLE_APPLICATION_CREDENTIALS is not set.');
+}
+
+const auth = new google.auth.GoogleAuth(authConfig);
 
 async function fetchSheetData(range) {
     try {
