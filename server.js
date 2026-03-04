@@ -118,12 +118,17 @@ let authConfig = {
 };
 
 if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    if (process.env.GOOGLE_APPLICATION_CREDENTIALS.startsWith('{')) {
+    const credsStr = process.env.GOOGLE_APPLICATION_CREDENTIALS.trim();
+    if (credsStr.startsWith('{')) {
         // Parse from raw JSON string in environment variable
-        authConfig.credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+        try {
+            authConfig.credentials = JSON.parse(credsStr);
+        } catch (e) {
+            logger.error('❌ Failed to parse GOOGLE_APPLICATION_CREDENTIALS as JSON:', { error: e.message });
+        }
     } else {
         // Load from file path
-        authConfig.keyFile = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        authConfig.keyFile = credsStr;
     }
 } else {
     logger.warn('⚠️ GOOGLE_APPLICATION_CREDENTIALS is not set.');
