@@ -19,6 +19,7 @@ END;
 $$ language 'plpgsql';
 
 -- Trigger for system_settings
+DROP TRIGGER IF EXISTS update_system_settings_modtime ON system_settings;
 CREATE TRIGGER update_system_settings_modtime
 BEFORE UPDATE ON system_settings
 FOR EACH ROW
