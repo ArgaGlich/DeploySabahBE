@@ -66,6 +66,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Root Health Check Endpoint
+app.get('/', (req, res) => {
+    res.json({ status: 'online', message: 'SIPENA SABAH API is running' });
+});
+
 // ==========================================
 // 3. GOOGLE SHEETS API INTEGRATION
 // ==========================================
