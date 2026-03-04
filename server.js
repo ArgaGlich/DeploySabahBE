@@ -58,7 +58,20 @@ const app = express();
 
 // Dynamic CORS from .env
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'https://deploy-sabah-fe.vercel.app',
+            process.env.FRONTEND_URL
+        ];
+        // Allow requests with no origin (like mobile apps or curl requests)
+        // or requests that match our allowed origins.
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
